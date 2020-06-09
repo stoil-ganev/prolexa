@@ -24,6 +24,7 @@ pred(mortal,  1,[a/mortal,n/mortal]).
 %pred(bachelor,1,[n/bachelor]).
 %pred(mammal,  1,[n/mammal]).
 pred(bird,    1,[n/bird]).
+pred(phoenix, 1,[n/phoenix]).
 %pred(bat,     1,[n/bat]).
 pred(penguin, 1,[n/penguin]).
 pred(sparrow, 1,[n/sparrow]).
@@ -45,6 +46,10 @@ verb_p2s(Verb_p,Verb_s):-
 	; 	atom_concat(Verb_p,s,Verb_s)
 	).
 
+counterfactual(Int, C) --> intervention(Int), [would], [it], [be], [the], [case], sentence(C).
+
+intervention([Int|Ints]) -->[suppose],sentence(Int), [Dot], intervention(Ints), {char_type(Dot, period)}.
+intervention([]) --> [].
 
 %%% sentences %%%
 
@@ -61,9 +66,22 @@ verb_phrase(s,M) --> [is],property(s,M).
 verb_phrase(p,M) --> [are],property(p,M).
 verb_phrase(N,M) --> iverb(N,M).
 
-property(N,M) --> adjective(N,M).
-property(s,M) --> [a],noun(s,M).
-property(p,M) --> noun(p,M).
+potential(C) --> determiner(N,M1,M2,C),noun(N,M1),potential_verb_phrase(N,M2).
+potential([(L:-true)]) --> proper_noun(N,X),potential_verb_phrase(N,X=>L).
+
+potential_verb_phrase(s,M) --> [can],potential_property(s,M).
+potential_verb_phrase(p,M) --> [can],potential_property(p,M).
+potential_verb_phrase(N,M) --> iverb(N,M).
+
+potential_property(N,X=>(not(Lit))) --> [not],[be],property1(N,X=>Lit).
+potential_property(N,M) --> [be],property1(N,M).
+
+property(N,X=>(not(Lit))) --> [not],property1(N,X=>Lit).
+property(N,M) --> property1(N,M).
+
+property1(N,M) --> adjective(N,M).
+property1(s,M) --> [a],noun(s,M).
+property1(p,M) --> noun(p,M).
 
 determiner(s,X=>B,X=>H,[(H:-B)]) --> [every].
 determiner(p,X=>B,X=>H,[(H:-B)]) --> [all].

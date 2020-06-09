@@ -46,12 +46,19 @@ handle_utterance(SessionId,Utterance,Answer):-
 % A. Utterance is a sentence 
 	( phrase(sentence(Rule),UtteranceList),
 	  write_debug(rule(Rule)),
-	  ( known_rule(Rule,SessionId) -> % A1. It follows from known rules
+	  ( contradicting_rule(Rule,SessionId,Answer)
+	  ; inconsistent_rule(Rule,SessionId,Answer)
+	  ; known_rule(Rule,SessionId) -> % A1. It follows from known rules
 			atomic_list_concat(['I already knew that',Utterance],' ',Answer)
 	  ; otherwise -> % A2. It doesn't follow, so add to stored rules
 			assertz(prolexa:stored_rule(SessionId,Rule)),
 			atomic_list_concat(['I will remember that',Utterance],' ',Answer)
 	  )
+	; phrase(counterfactual(Int, Rule),UtteranceList),
+	  write_debug(Int),
+	  write_debug(rule(Rule)),
+	  counterfactual_statement(Int, Rule, SessionId, Answer),
+	  write_debug(Answer)
 % B. Utterance is a question that can be answered
 	; phrase(question(Query),UtteranceList),
 	  write_debug(query(Query)),
